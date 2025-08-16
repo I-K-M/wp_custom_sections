@@ -45,9 +45,61 @@ $ss_p     = get_field('slider_section_paragraph');
           <?php endwhile; ?>
         </div>
         <div class="swiper-pagination"></div>
-        <div class="swiper-button-prev" aria-label="Précédent"></div>
-        <div class="swiper-button-next" aria-label="Suivant"></div>
+        <div class="swiper-button-prev" aria-label="Previous"></div>
+        <div class="swiper-button-next" aria-label="Next"></div>
       </div>
     <?php endif; ?>
     </div>
   </section>
+<?php
+// add to functions.php slider script import
+add_action('wp_enqueue_scripts', function () {
+  wp_enqueue_style(
+    'swiper',
+    'https://unpkg.com/swiper@11/swiper-bundle.min.css',
+    [],
+    null
+  );
+  wp_enqueue_script(
+    'swiper',
+    'https://unpkg.com/swiper@11/swiper-bundle.min.js',
+    [],
+    null,
+    true
+  );
+  wp_add_inline_script('swiper', <<<JS
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.membership-swiper').forEach(function (el) {
+    if (el.dataset.swiperInitialized === '1') return;
+    if (el.swiper && typeof el.swiper.destroy === 'function') { el.swiper.destroy(true, true); }
+
+    var slidesCount = el.querySelectorAll('.swiper-slide').length;
+    var canLoop = slidesCount > 2;
+
+    new Swiper(el, {
+      slidesPerView: 1,
+      spaceBetween: 16,
+      slidesPerGroup: 1,
+      breakpoints: {
+        640:  { slidesPerView: 2 },
+        1024: { slidesPerView: 2 }
+      },
+      pagination: { el: el.querySelector('.swiper-pagination'), clickable: true },
+      navigation: {
+        nextEl: el.querySelector('.swiper-button-next'),
+        prevEl: el.querySelector('.swiper-button-prev')
+      },
+      loop: canLoop,
+      rewind: !canLoop,
+      watchOverflow: true,
+      observer: false,
+      observeParents: false,
+      observeSlideChildren: false
+    });
+
+    el.dataset.swiperInitialized = '1';
+  });
+});
+JS
+  );
+?>
